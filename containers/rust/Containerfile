@@ -1,0 +1,42 @@
+ARG RALPH_VERSION=28.5.6
+ARG RUST_VERSION=1.99.1
+
+FROM ghcr.io/zon/ralph:${RALPH_VERSION}
+
+ARG RALPH_VERSION
+ARG RUST_VERSION
+
+LABEL org.opencontainers.image.title="Ralph Rust" \
+      org.opencontainers.image.description="Ralph executor with the Rust toolchain" \
+      org.opencontainers.image.source="https://github.com/zon/ralph-containers" \
+      org.opencontainers.image.version="ralph-${RALPH_VERSION}-rust-${RUST_VERSION}"
+
+# Native headers needed to compile common Rust game, windowing, audio, and
+# database crates. The Playwright base already carries the matching runtime
+# libraries.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      build-essential \
+      pkg-config \
+      libssl-dev \
+      libasound2-dev \
+      libudev-dev \
+      libx11-dev \
+      libxcursor-dev \
+      libxi-dev \
+      libxrandr-dev \
+      libxkbcommon-dev \
+      libwayland-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:${PATH}
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+      | sh -s -- -y --no-modify-path --profile default --default-toolchain "${RUST_VERSION}" \
+ && rustup component add rustfmt clippy
+
+WORKDIR /workspace
+
+CMD ["/bin/sh"]
