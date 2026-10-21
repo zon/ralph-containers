@@ -48,7 +48,7 @@ just test
 
 The `Publish containers` GitHub Actions workflow builds every image on pull requests and pushes `linux/amd64` images to GHCR on `main` and on manual dispatch. It authenticates with `GITHUB_TOKEN` and uses the repository's `packages: write` permission.
 
-A new GHCR package starts private. After its first publish, set the package to public from **Package settings → Danger Zone → Change visibility** if anonymous pulls are wanted. Public package visibility is separate from repository visibility, and cannot be reversed.
+Published packages are public so remote workflows can pull them without an image pull secret. If GitHub creates a future package as private, set it to public from **Package settings → Danger Zone → Change visibility**. Public package visibility is separate from repository visibility, and cannot be reversed.
 
 ## Layout
 
