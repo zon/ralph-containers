@@ -8,10 +8,9 @@ The Ralph image carries Ralph, the argo command line, and OpenCode. It carries n
 
 | Image | Contents |
 | --- | --- |
-| `ghcr.io/zon/ralph-go` | Go toolchain with `air` for live reload and `templ` for templates |
 | `ghcr.io/zon/ralph-rust` | Rust stable with `rustfmt` and `clippy`, plus native build dependencies for Bevy, Winit, audio, and gamepad crates |
 
-The Go image does not install a C compiler. A project that needs cgo adds one in its own image or before commands.
+The Go image, `ghcr.io/zon/ralph-go`, now lives in the [Ralph repository](https://github.com/zon/ralph) under `toolchains/go`.
 
 ## Use an image
 
@@ -22,8 +21,8 @@ mode: remote
 
 workflow:
   image:
-    repository: ghcr.io/zon/ralph-go
-    tag: ralph-28.8.0-go-1.27.4
+    repository: ghcr.io/zon/ralph-rust
+    tag: ralph-28.8.0-rust-1.99.1
 ```
 
 The `latest` tag follows the `main` branch. Pin a version tag for reproducible runs.
@@ -35,9 +34,9 @@ The base Ralph image is an argument, so an image can track a different Ralph rel
 ```bash
 podman build \
   --build-arg RALPH_VERSION=28.8.0 \
-  --build-arg GO_VERSION=1.27.4 \
-  -t ghcr.io/zon/ralph-go:dev \
-  -f containers/go/Containerfile containers/go
+  --build-arg RUST_VERSION=1.99.1 \
+  -t ghcr.io/zon/ralph-rust:dev \
+  -f containers/rust/Containerfile containers/rust
 ```
 
 Or use the just recipes:
@@ -47,7 +46,7 @@ just build
 just test
 ```
 
-Name one image to build only that image, for example `just build-go` or `just test-rust`. `just test` runs each toolchain command inside its built image.
+Name one image to build only that image, for example `just build-rust` or `just test-rust`. `just test` runs each toolchain command inside its built image.
 
 ## Publish
 
@@ -59,8 +58,6 @@ Published packages are public so remote workflows can pull them without an image
 
 ```text
 containers/
-  go/
-    Containerfile
   rust/
     Containerfile
 ```

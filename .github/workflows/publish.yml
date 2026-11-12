@@ -33,14 +33,6 @@ jobs:
             tool_version: "1.99.1"
             build_args: |
               RUST_VERSION=1.99.1
-          - image: ralph-go
-            context: containers/go
-            file: containers/go/Containerfile
-            ralph_version: "28.8.0"
-            tool: go
-            tool_version: "1.27.4"
-            build_args: |
-              GO_VERSION=1.27.4
 
     steps:
       - name: Check out the repository
