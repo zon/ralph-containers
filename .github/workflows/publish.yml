@@ -28,8 +28,19 @@ jobs:
           - image: ralph-rust
             context: containers/rust
             file: containers/rust/Containerfile
-            ralph_version: "28.5.6"
-            rust_version: "1.99.1"
+            ralph_version: "28.8.0"
+            tool: rust
+            tool_version: "1.99.1"
+            build_args: |
+              RUST_VERSION=1.99.1
+          - image: ralph-go
+            context: containers/go
+            file: containers/go/Containerfile
+            ralph_version: "28.8.0"
+            tool: go
+            tool_version: "1.27.4"
+            build_args: |
+              GO_VERSION=1.27.4
 
     steps:
       - name: Check out the repository
@@ -53,20 +64,36 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=ralph-${{ matrix.ralph_version }}-rust-${{ matrix.rust_version }}
+            type=raw,value=ralph-${{ matrix.ralph_version }}-${{ matrix.tool }}-${{ matrix.tool_version }}
             type=sha,format=short,prefix=sha-
 
-      - name: Build and publish
+      - name: Build
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          load: true
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             RALPH_VERSION=${{ matrix.ralph_version }}
-            RUST_VERSION=${{ matrix.rust_version }}
+            ${{ matrix.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          format: table
+          severity: CRITICAL
+          exit-code: '1'
+
+      - name: Push
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ steps.meta.outputs.tags }}" | while read -r tag; do
+            [ -n "$tag" ] && docker push "$tag"
+          done

@@ -1,4 +1,4 @@
-ARG RALPH_VERSION=28.5.6
+ARG RALPH_VERSION=28.8.0
 ARG RUST_VERSION=1.99.1
 
 FROM ghcr.io/zon/ralph:${RALPH_VERSION}
@@ -11,9 +11,9 @@ LABEL org.opencontainers.image.title="Ralph Rust" \
       org.opencontainers.image.source="https://github.com/zon/ralph-containers" \
       org.opencontainers.image.version="ralph-${RALPH_VERSION}-rust-${RUST_VERSION}"
 
-# Native headers needed to compile common Rust game, windowing, audio, and
-# database crates. The Playwright base already carries the matching runtime
-# libraries.
+# Native headers and their runtime libraries for common Rust game, windowing,
+# audio, and database crates. The base image carries no browser or desktop
+# libraries, so each dependency is installed here.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       build-essential \
